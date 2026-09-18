@@ -95,8 +95,6 @@
   .bar-red { background: #e74c3c; }
   .bar-green { background: #27ae60; }
   .bar-blue { background: #3b82f6; }
-  .bar-uber { background: #ffffff; }
-  .bar-bolt { background: #34d186; }
 
   .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
   .stat { background: #141414; border-radius: 10px; padding: 10px; border: 1px solid #2a2a2a; }
@@ -139,10 +137,6 @@
     <div>
       <label>Aluguer semanal (€)</label>
       <input type="number" id="cfgAluguer" value="200" step="0.01">
-    </div>
-    <div>
-      <label>Consumo médio (L/100km)</label>
-      <input type="number" id="cfgConsumo" value="6" step="0.1">
     </div>
   </div>
   <button class="btn-secondary" onclick="guardarConfig()">Guardar configuração</button>
@@ -293,7 +287,7 @@ const STORAGE_KEY = 'gestorTVDE_dados';
 const CONFIG_KEY = 'gestorTVDE_config';
 const ULTIMO_KM_KEY = 'gestorTVDE_ultimoKm';
 
-let config = { aluguer: 200, consumo: 6 };
+let config = { aluguer: 200 };
 let dados = { dias: [] };
 
 if ('serviceWorker' in navigator) {
@@ -308,12 +302,10 @@ function carregarConfig() {
   const c = localStorage.getItem(CONFIG_KEY);
   if (c) { try { config = JSON.parse(c); } catch(e) {} }
   document.getElementById('cfgAluguer').value = config.aluguer;
-  document.getElementById('cfgConsumo').value = config.consumo || 6;
 }
 
 function guardarConfig() {
   config.aluguer = parseFloat(document.getElementById('cfgAluguer').value) || 0;
-  config.consumo = parseFloat(document.getElementById('cfgConsumo').value) || 6;
   localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
   alert('Configuração guardada!');
   renderTudo();
