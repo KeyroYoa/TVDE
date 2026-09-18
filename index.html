@@ -665,3 +665,12 @@ window.addEventListener('load', function() {
   carregarDados();
   document.getElementById('dataRegisto').value = hojeISO();
   carregarUltimoKm();
+  ['uberGanhos','uberHoras','boltGanhos','boltHoras','kmInicio','kmFim','litros','custoCombustivel'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderResumoDia);
+  });
+  renderTudo();
+});
+</script>
+
+</body>
+</html>
