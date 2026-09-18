@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Gestor TVDE</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3b82f6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gestor TVDE">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #eef2f7;
+    color: #1a2b4c;
+    padding: 12px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  h1 { font-size: 22px; text-align: center; margin-bottom: 4px; }
+  .sub { text-align: center; font-size: 13px; color: #5a6f88; margin-bottom: 16px; }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .card h2 { font-size: 16px; margin-bottom: 10px; color: #0b1e33; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #2c3e50; }
+  input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1.5px solid #dce4ec;
+    border-radius: 10px;
+    font-size: 15px;
+    margin-bottom: 10px;
+    background: #fafcff;
+  }
+  input:focus, select:focus { border-color: #3b82f6; outline: none; background: #fff; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 120px; }
+  button {
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary { background: #3b82f6; color: #fff; width: 100%; }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-secondary { background: #eef2f7; color: #2c3e50; border: 1.5px solid #dce4ec; }
+  .btn-secondary:hover { background: #dce4ec; }
+  .btn-danger { background: #fee2e2; color: #b91c1c; }
+  .btn-danger:hover { background: #fecaca; }
+  .btn-success { background: #dcfce7; color: #166534; }
+  .btn-success:hover { background: #bbf7d0; }
+  .btn-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .btn-row button { flex: 1; min-width: 120px; }
+  .bar-wrap { margin: 10px 0; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; font-weight: 600; }
+  .bar { height: 22px; background: #e9edf2; border-radius: 20px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 0%; transition: width 0.3s, background 0.3s; border-radius: 20px; }
+  .bar-red { background: #e74c3c; }
+  .bar-green { background: #27ae60; }
+  .bar-blue { background: #3b82f6; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .stat { background: #f8faff; border-radius: 10px; padding: 10px; border: 1px solid #e6edf5; }
+  .stat .rot { font-size: 12px; color: #5a6f88; font-weight: 500; }
+  .stat .val { font-size: 18px; font-weight: 700; color: #0b1e33; margin-top: 2px; }
+  .hist-item {
+    background: #f8faff;
+    border: 1px solid #e6edf5;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .hist-item .top { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 4px; }
+  .hist-item .detalhe { color: #5a6f88; }
+  .folga { background: #fef3c7; border-color: #fde68a; }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #3b82f6;
+    margin: 12px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🚗 Gestor TVDE</h1>
+<div class="sub">Registo diário — funciona offline</div>
+
+<div class="card">
+  <h2>⚙️ Configuração</h2>
+  <div class="row">
+    <div>
+      <label>Aluguer semanal (€)</label>
+      <input type="number" id="cfgAluguer" value="200" step="0.01">
+    </div>
+    <div>
+      <label>Consumo médio (L/100km)</label>
+      <input type="number" id="cfgConsumo" value="6" step="0.1">
+    </div>
+  </div>
+  <button class="btn-secondary" onclick="guardarConfig()">Guardar configuração</button>
+</div>
+
+<div class="card">
+  <h2>📝 Registo do dia</h2>
+  <label>Data</label>
+  <input type="date" id="dataRegisto">
+  <div class="section-title">💰 Ganhos e Horas</div>
+  <div class="row">
+    <div>
+      <label>Ganhos do dia (€)</label>
+      <input type="number" id="ganhosDia" value="0" step="0.01">
+    </div>
+    <div>
+      <label>Horas trabalhadas</label>
+      <input type="number" id="horasDia" value="0" step="0.1">
+    </div>
+  </div>
+  <div class="section-title">🛣️ Km do carro</div>
+  <div class="row">
+    <div>
+      <label>Km início</label>
+      <input type="number" id="kmInicio" value="0" step="0.1">
+    </div>
+    <div>
+      <label>Km fim</label>
+      <input type="number" id="kmFim" value="0" step="0.1">
+    </div>
+  </div>
+  <div class="section-title">⛽ Combustível</div>
+  <div class="row">
+    <div>
+      <label>Litros abastecidos</label>
+      <input type="number" id="litros" value="0" step="0.01">
+    </div>
+    <div>
+      <label>Custo (€)</label>
+      <input type="number" id="custoCombustivel" value="0" step="0.01">
+    </div>
+  </div>
+  <div class="btn-row" style="margin-top:12px;">
+    <button class="btn-secondary" onclick="marcarFolga()">🛌 Folga</button>
+  </div>
+</div>
+
+<div class="card" id="resumoDia" style="display:none;">
+  <h2>📊 Resumo do dia</h2>
+  <div id="conteudoResumo"></div>
+</div>
+
+<div class="card">
+  <h2>📈 Progresso semanal</h2>
+  <div class="bar-wrap">
+    <div class="bar-label">
+      <span>Aluguer</span>
+      <span id="labelAluguer">0€ / 200€</span>
+    </div>
+    <div class="bar">
+      <div id="barAluguer" class="bar-fill bar-red" style="width:0%;"></div>
+    </div>
+  </div>
+  <div class="bar-wrap" id="wrapGanhos" style="display:none;">
+    <div class="bar-label">
+      <span>Ganhos extra</span>
+      <span id="labelGanhos">0€</span>
+    </div>
+    <div class="bar">
+      <div id="barGanhos" class="bar-fill bar-blue" style="width:0%;"></div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="rot">Total ganhos</div><div class="val" id="totalBruto">0€</div></div>
+    <div class="stat"><div class="rot">Total líquido</div><div class="val" id="totalLiquido">0€</div></div>
+    <div class="stat"><div class="rot">Km total</div><div class="val" id="totalKm">0</div></div>
+    <div class="stat"><div class="rot">Horas totais</div><div class="val" id="totalHoras">0h</div></div>
+    <div class="stat"><div class="rot">Combustível</div><div class="val" id="totalCombustivel">0€</div></div>
+    <div class="stat"><div class="rot">Ganho/hora</div><div class="val" id="ganhoHora">0€</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📅 Histórico</h2>
+  <div id="historico"></div>
+  <div class="btn-row" style="margin-top:12px;">
+    <button class="btn-secondary" onclick="exportarBackup()">💾 Exportar backup</button>
+    <button class="btn-secondary" onclick="importarBackup()">📂 Importar backup</button>
+    <button class="btn-danger" onclick="apagarTudo()">🗑️ Apagar tudo</button>
+  </div>
+  <input type="file" id="fileInput" accept=".json" style="display:none;" onchange="processarImportacao(event)">
+</div>
+
+<div class="card" style="background:#dcfce7;border:2px solid #86efac;">
+  <h2 style="color:#166534;">✅ Confirmar e guardar o dia</h2>
+  <p style="font-size:13px;color:#166534;margin-bottom:12px;">Depois de preencheres os dados do dia, clica aqui para fechar.</p>
+  <button class="btn-success" style="width:100%;font-size:17px;padding:16px;" onclick="fecharDia()">✅ Fechar dia e guardar</button>
+</div>
+
+<script>
+const STORAGE_KEY = 'gestorTVDE_dados';
+const CONFIG_KEY = 'gestorTVDE_config';
+const ULTIMO_KM_KEY = 'gestorTVDE_ultimoKm';
+
+let config = { aluguer: 200, consumo: 6 };
+let dados = { dias: [] };
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log('SW registado'))
+      .catch(err => console.log('Erro SW:', err));
+  });
+}
+
+function carregarConfig() {
+  const c = localStorage.getItem(CONFIG_KEY);
+  if (c) { try { config = JSON.parse(c); } catch(e) {} }
+  document.getElementById('cfgAluguer').value = config.aluguer;
+  document.getElementById('cfgConsumo').value = config.consumo || 6;
+}
+
+function guardarConfig() {
+  config.aluguer = parseFloat(document.getElementById('cfgAluguer').value) || 0;
+  config.consumo = parseFloat(document.getElementById('cfgConsumo').value) || 6;
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+  alert('Configuração guardada!');
+  renderTudo();
+}
+
+function carregarDados() {
+  const d = localStorage.getItem(STORAGE_KEY);
+  if (d) { try { dados = JSON.parse(d); } catch(e) { dados = { dias: [] }; } }
+  if (!dados.dias) dados.dias = [];
+}
+
+function guardarDados() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+}
+
+function carregarUltimoKm() {
+  const km = localStorage.getItem(ULTIMO_KM_KEY);
+  if (km !== null && km !== '') {
+    document.getElementById('kmInicio').value = km;
+  }
+}
+
+function guardarUltimoKm(km) {
+  localStorage.setItem(ULTIMO_KM_KEY, km);
+}
+
+function hojeISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dia = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dia}`;
+}
+
+function segundaDaSemana(iso) {
+  const d = new Date(iso + 'T12:00:00');
+  const diaSemana = d.getDay();
+  const diff = (diaSemana === 0 ? -6 : 1 - diaSemana);
+  d.setDate(d.getDate() + diff);
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dia = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dia}`;
+}
+
+function formatarData(iso) {
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function obterDadosDia() {
+  return {
+    ganhos: parseFloat(document.getElementById('ganhosDia').value) || 0,
+    horas: parseFloat(document.getElementById('horasDia').value) || 0,
+    kmInicio: parseFloat(document.getElementById('kmInicio').value) || 0,
+    kmFim: parseFloat(document.getElementById('kmFim').value) || 0,
+    litros: parseFloat(document.getElementById('litros').value) || 0,
+    custoCombustivel: parseFloat(document.getElementById('custoCombustivel').value) || 0
+  };
+}
+
+function fecharDia() {
+  const data = document.getElementById('dataRegisto').value || hojeISO();
+  const d = obterDadosDia();
+  if (d.kmFim < d.kmInicio) { alert('O Km final não pode ser menor que o Km inicial.'); return; }
+  if (d.ganhos === 0 && d.kmFim === d.kmInicio) { alert('Preenche pelo menos os ganhos ou os Km.'); return; }
+  const existente = dados.dias.findIndex(x => x.data === data);
+  if (existente >= 0) {
+    if (!confirm('Já existe registo para esta data. Substituir?')) return;
+    dados.dias.splice(existente, 1);
+  }
+  dados.dias.push({
+    data, folga: false,
+    ganhos: d.ganhos, horas: d.horas,
+    kmInicio: d.kmInicio, kmFim: d.kmFim,
+    kmPercorridos: d.kmFim - d.kmInicio,
+    litros: d.litros, custoCombustivel: d.custoCombustivel,
+    criadoEm: new Date().toISOString()
+  });
+  dados.dias.sort((a,b) => a.data.localeCompare(b.data));
+  guardarDados();
+  if (d.kmFim > 0) guardarUltimoKm(d.kmFim);
+  limparFormulario();
+  carregarUltimoKm();
+  renderTudo();
+  alert('Dia guardado! Km final passado para o próximo dia.');
+}
+
+function marcarFolga() {
+  const data = document.getElementById('dataRegisto').value || hojeISO();
+  const existente = dados.dias.findIndex(x => x.data === data);
+  if (existente >= 0) {
+    if (!confirm('Já existe registo. Substituir por folga?')) return;
+    dados.dias.splice(existente, 1);
+  }
+  dados.dias.push({ data, folga: true, criadoEm: new Date().toISOString() });
+  dados.dias.sort((a,b) => a.data.localeCompare(b.data));
+  guardarDados();
+  limparFormulario();
+  carregarUltimoKm();
+  renderTudo();
+  alert('Folga registada!');
+}
+
+function limparFormulario() {
+  document.getElementById('ganhosDia').value = 0;
+  document.getElementById('horasDia').value = 0;
+  document.getElementById('kmFim').value = 0;
+  document.getElementById('litros').value = 0;
+  document.getElementById('custoCombustivel').value = 0;
+}
+
+function totaisDia(dia) {
+  const vazio = { ganhos:0, liquido:0, km:0, horas:0, litros:0, combustivel:0 };
+  if (!dia || dia.folga) return vazio;
+  const combustivel = dia.custoCombustivel || 0;
+  return {
+    ganhos: dia.ganhos || 0,
+    liquido: (dia.ganhos || 0) - combustivel,
+    km: dia.kmPercorridos || 0,
+    horas: dia.horas || 0,
+    litros: dia.litros || 0,
+    combustivel: combustivel
+  };
+}
+
+function totaisSemana(segundaISO) {
+  const diasSemana = dados.dias.filter(d => segundaDaSemana(d.data) === segundaISO);
+  let ganhos=0, liquido=0, km=0, horas=0, litros=0, combustivel=0;
+  diasSemana.forEach(d => {
+    const t = totaisDia(d);
+    ganhos += t.ganhos; liquido += t.liquido; km += t.km; horas += t.horas;
+    litros += t.litros; combustivel += t.combustivel;
+  });
+  return { ganhos, liquido, km, horas, litros, combustivel, dias: diasSemana };
+}
+
+function renderResumoDia() {
+  const div = document.getElementById('resumoDia');
+  const cont = document.getElementById('conteudoResumo');
+  const d = obterDadosDia();
+  if (d.ganhos === 0 && d.kmFim === d.kmInicio && d.custoCombustivel === 0) {
+    div.style.display = 'none';
+    return;
+  }
+  const km = Math.max(0, d.kmFim - d.kmInicio);
+  const liquido = d.ganhos - d.custoCombustivel;
+  const ganhoHora = d.horas > 0 ? (d.ganhos / d.horas) : 0;
+  cont.innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="rot">Ganhos</div><div class="val">${d.ganhos.toFixed(2)}€</div></div>
+      <div class="stat"><div class="rot">Líquido</div><div class="val">${liquido.toFixed(2)}€</div></div>
+      <div class="stat"><div class="rot">Km do dia</div><div class="val">${km.toFixed(1)}</div></div>
+      <div class="stat"><div class="rot">Ganho/hora</div><div class="val">${ganhoHora.toFixed(2)}€</div></div>
+    </div>
+  `;
+  div.style.display = 'block';
+}
+
+function renderProgressoSemanal() {
+  const segunda = segundaDaSemana(hojeISO());
+  const t = totaisSemana(segunda);
+  const alvo = config.aluguer;
+  let percAluguer = alvo > 0 ? (t.liquido / alvo) * 100 : 0;
+  if (percAluguer > 100) percAluguer = 100;
+  const barA = document.getElementById('barAluguer');
+  barA.style.width = percAluguer + '%';
+  barA.className = 'bar-fill ' + (t.liquido >= alvo ? 'bar-green' : 'bar-red');
+  document.getElementById('labelAluguer').textContent = `${t.liquido.toFixed(2)}€ / ${alvo.toFixed(2)}€`;
+  const wrap = document.getElementById('wrapGanhos');
+  if (t.liquido >= alvo && alvo > 0) {
+    wrap.style.display = 'block';
+    const extra = t.liquido - alvo;
+    document.getElementById('barGanhos').style.width = Math.min(100, (extra/alvo)*100) + '%';
+    document.getElementById('labelGanhos').textContent = `${extra.toFixed(2)}€`;
+  } else {
+    wrap.style.display = 'none';
+  }
+  document.getElementById('totalBruto').textContent = t.ganhos.toFixed(2) + '€';
+  document.getElementById('totalLiquido').textContent = t.liquido.toFixed(2) + '€';
+  document.getElementById('totalKm').textContent = t.km.toFixed(1);
+  document.getElementById('totalHoras').textContent = t.horas.toFixed(2) + 'h';
+  document.getElementById('totalCombustivel').textContent = t.combustivel.toFixed(2) + '€';
+  document.getElementById('ganhoHora').textContent = (t.horas > 0 ? (t.ganhos / t.horas).toFixed(2) : '0.00') + '€';
+}
+
+function renderHistorico() {
+  const div = document.getElementById('historico');
+  if (dados.dias.length === 0) {
+    div.innerHTML = '<div style="font-size:13px;color:#5a6f88;">Ainda não há registos.</div>';
+    return;
+  }
+  const lista = [...dados.dias].sort((a,b) => b.data.localeCompare(a.data));
+  div.innerHTML = lista.map(d => {
+    if (d.folga) {
+      return `<div class="hist-item folga">
+        <div class="top"><span>🛌 ${formatarData(d.data)}</span><span>Folga</span></div>
+      </div>`;
+    }
+    const t = totaisDia(d);
+    return `<div class="hist-item">
+      <div class="top"><span>${formatarData(d.data)}</span><span>${t.ganhos.toFixed(2)}€</span></div>
+      <div class="detalhe">Líquido: ${t.liquido.toFixed(2)}€ · Km: ${t.km.toFixed(1)} · Horas: ${t.horas.toFixed(2)}h</div>
+      <div class="detalhe">Combustível: ${t.combustivel.toFixed(2)}€ (${t.litros.toFixed(2)}L)</div>
+      <button class="btn-danger" style="margin-top:6px;padding:4px 10px;font-size:12px;" onclick="removerDia('${d.data}')">Remover</button>
+    </div>`;
+  }).join('');
+}
+
+function removerDia(data) {
+  if (!confirm('Remover o registo de ' + formatarData(data) + '?')) return;
+  dados.dias = dados.dias.filter(d => d.data !== data);
+  guardarDados();
+  renderTudo();
+}
+
+function renderTudo() {
+  renderResumoDia();
+  renderProgressoSemanal();
+  renderHistorico();
+}
+
+function nomeBackup() {
+  const d = new Date();
+  const dia = String(d.getDate()).padStart(2,'0');
+  const mes = String(d.getMonth()+1).padStart(2,'0');
+  const ano = d.getFullYear();
+  const hora = String(d.getHours()).padStart(2,'0');
+  const min = String(d.getMinutes()).padStart(2,'0');
+  return `TVDE_${dia}-${mes}-${ano}_${hora}h${min}.json`;
+}
+
+function exportarBackup() {
+  const backup = {
+    versao: 4,
+    exportadoEm: new Date().toISOString(),
+    config: config,
+    ultimoKm: localStorage.getItem(ULTIMO_KM_KEY) || '',
+    dados: dados
+  };
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const nome = nomeBackup();
+  if (navigator.canShare && navigator.canShare({ files: [new File([blob], nome, { type: 'application/json' })] })) {
+    const file = new File([blob], nome, { type: 'application/json' });
+    navigator.share({ files: [file], title: 'Backup Gestor TVDE' })
+      .catch(() => descarregarBlob(blob, nome));
+  } else {
+    descarregarBlob(blob, nome);
+  }
+}
+
+function descarregarBlob(blob, nome) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importarBackup() {
+  document.getElementById('fileInput').click();
+}
+
+function processarImportacao(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const b = JSON.parse(e.target.result);
+      if (b.config) { config = b.config; localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); }
+      if (b.ultimoKm !== undefined) { localStorage.setItem(ULTIMO_KM_KEY, b.ultimoKm); }
+      if (b.dados && b.dados.dias) {
+        if (confirm('Substituir os dados atuais pelos do backup?')) {
+          dados = b.dados;
+          guardarDados();
+          carregarConfig();
+          carregarUltimoKm();
+          renderTudo();
+          alert('Backup importado!');
+        }
+      } else {
+        alert('Ficheiro inválido.');
+      }
+    } catch(err) {
+      alert('Erro: ' + err.message);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function apagarTudo() {
+  if (!confirm('Apagar TODOS os registos? Esta ação não pode ser desfeita.')) return;
+  if (!confirm('Tens a certeza? Faz backup primeiro se necessário.')) return;
+  dados = { dias: [] };
+  localStorage.removeItem(ULTIMO_KM_KEY);
+  guardarDados();
+  renderTudo();
+  alert('Todos os dados foram apagados.');
+}
+
+window.addEventListener('load', function() {
+  carregarConfig();
+  carregarDados();
+  document.getElementById('dataRegisto').value = hojeISO();
+  carregarUltimoKm();
+  ['ganhosDia','horasDia','kmInicio','kmFim','litros','custoCombustivel'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderResumoDia);
+  });
+  renderTudo();
+});
+</script>
+
+</body>
+</html>
