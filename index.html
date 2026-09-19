@@ -47,7 +47,7 @@
   input:focus, select:focus { border-color: #3b82f6; outline: none; background: #1a1a1a; }
   input[type="date"], input[type="time"] { color-scheme: dark; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .row > div { flex: 1; min-width: 120px; }
+  .row > div { flex: 1; min-width: 100px; }
   button {
     padding: 12px 16px;
     border: none;
@@ -57,8 +57,6 @@
     cursor: pointer;
     transition: background 0.2s;
   }
-  .btn-primary { background: #3b82f6; color: #fff; width: 100%; }
-  .btn-primary:hover { background: #2563eb; }
   .btn-secondary { background: #2a2a2a; color: #e8eaed; border: 1.5px solid #333; }
   .btn-secondary:hover { background: #333; }
   .btn-danger { background: #3a1a1a; color: #f87171; border: 1.5px solid #5a2020; }
@@ -147,7 +145,7 @@
   <label>Data</label>
   <input type="date" id="dataRegisto">
 
-  <div class="section-title">💰 Ganhos e Horas por plataforma</div>
+  <div class="section-title">💰 Ganhos, Horas e Viagens</div>
 
   <div class="plataforma-box uber">
     <div class="plataforma-titulo">⚫ Uber</div>
@@ -159,6 +157,20 @@
       <div>
         <label>Horas</label>
         <input type="number" id="uberHoras" value="0" step="0.1">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Viagens feitas</label>
+        <input type="number" id="uberViagens" value="0" step="1" min="0">
+      </div>
+      <div>
+        <label>Recusadas (cliente)</label>
+        <input type="number" id="uberRecusadasCliente" value="0" step="1" min="0">
+      </div>
+      <div>
+        <label>Recusadas (eu)</label>
+        <input type="number" id="uberRecusadasEu" value="0" step="1" min="0">
       </div>
     </div>
   </div>
@@ -173,6 +185,20 @@
       <div>
         <label>Horas</label>
         <input type="number" id="boltHoras" value="0" step="0.1">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Viagens feitas</label>
+        <input type="number" id="boltViagens" value="0" step="1" min="0">
+      </div>
+      <div>
+        <label>Recusadas (cliente)</label>
+        <input type="number" id="boltRecusadasCliente" value="0" step="1" min="0">
+      </div>
+      <div>
+        <label>Recusadas (eu)</label>
+        <input type="number" id="boltRecusadasEu" value="0" step="1" min="0">
       </div>
     </div>
   </div>
@@ -237,20 +263,28 @@
   <div class="section-title">📊 Total por plataforma (semana)</div>
   <div class="stats">
     <div class="stat uber">
-      <div class="rot">⚫ Uber (ganhos)</div>
+      <div class="rot">⚫ Uber</div>
       <div class="val" id="semanaUber">0€</div>
     </div>
     <div class="stat bolt">
-      <div class="rot">🟢 Bolt (ganhos)</div>
+      <div class="rot">🟢 Bolt</div>
       <div class="val" id="semanaBolt">0€</div>
     </div>
     <div class="stat uber">
-      <div class="rot">⚫ Uber (horas)</div>
+      <div class="rot">⚫ Uber horas</div>
       <div class="val" id="semanaUberHoras">0h</div>
     </div>
     <div class="stat bolt">
-      <div class="rot">🟢 Bolt (horas)</div>
+      <div class="rot">🟢 Bolt horas</div>
       <div class="val" id="semanaBoltHoras">0h</div>
+    </div>
+    <div class="stat uber">
+      <div class="rot">⚫ Uber viagens</div>
+      <div class="val" id="semanaUberViagens">0</div>
+    </div>
+    <div class="stat bolt">
+      <div class="rot">🟢 Bolt viagens</div>
+      <div class="val" id="semanaBoltViagens">0</div>
     </div>
   </div>
 
@@ -360,8 +394,14 @@ function obterDadosDia() {
   return {
     uberGanhos: parseFloat(document.getElementById('uberGanhos').value) || 0,
     uberHoras: parseFloat(document.getElementById('uberHoras').value) || 0,
+    uberViagens: parseInt(document.getElementById('uberViagens').value) || 0,
+    uberRecusadasCliente: parseInt(document.getElementById('uberRecusadasCliente').value) || 0,
+    uberRecusadasEu: parseInt(document.getElementById('uberRecusadasEu').value) || 0,
     boltGanhos: parseFloat(document.getElementById('boltGanhos').value) || 0,
     boltHoras: parseFloat(document.getElementById('boltHoras').value) || 0,
+    boltViagens: parseInt(document.getElementById('boltViagens').value) || 0,
+    boltRecusadasCliente: parseInt(document.getElementById('boltRecusadasCliente').value) || 0,
+    boltRecusadasEu: parseInt(document.getElementById('boltRecusadasEu').value) || 0,
     kmInicio: parseFloat(document.getElementById('kmInicio').value) || 0,
     kmFim: parseFloat(document.getElementById('kmFim').value) || 0,
     litros: parseFloat(document.getElementById('litros').value) || 0,
@@ -384,8 +424,14 @@ function fecharDia() {
     data, folga: false,
     uberGanhos: d.uberGanhos,
     uberHoras: d.uberHoras,
+    uberViagens: d.uberViagens,
+    uberRecusadasCliente: d.uberRecusadasCliente,
+    uberRecusadasEu: d.uberRecusadasEu,
     boltGanhos: d.boltGanhos,
     boltHoras: d.boltHoras,
+    boltViagens: d.boltViagens,
+    boltRecusadasCliente: d.boltRecusadasCliente,
+    boltRecusadasEu: d.boltRecusadasEu,
     ganhos: totalGanhos,
     horas: d.uberHoras + d.boltHoras,
     kmInicio: d.kmInicio, kmFim: d.kmFim,
@@ -421,16 +467,25 @@ function marcarFolga() {
 function limparFormulario() {
   document.getElementById('uberGanhos').value = 0;
   document.getElementById('uberHoras').value = 0;
+  document.getElementById('uberViagens').value = 0;
+  document.getElementById('uberRecusadasCliente').value = 0;
+  document.getElementById('uberRecusadasEu').value = 0;
   document.getElementById('boltGanhos').value = 0;
   document.getElementById('boltHoras').value = 0;
+  document.getElementById('boltViagens').value = 0;
+  document.getElementById('boltRecusadasCliente').value = 0;
+  document.getElementById('boltRecusadasEu').value = 0;
   document.getElementById('kmFim').value = 0;
   document.getElementById('litros').value = 0;
   document.getElementById('custoCombustivel').value = 0;
 }
 
 function totaisDia(dia) {
-  const vazio = { ganhos:0, liquido:0, km:0, horas:0, litros:0, combustivel:0,
-                  uberGanhos:0, uberHoras:0, boltGanhos:0, boltHoras:0 };
+  const vazio = {
+    ganhos:0, liquido:0, km:0, horas:0, litros:0, combustivel:0,
+    uberGanhos:0, uberHoras:0, uberViagens:0, uberRecusadasCliente:0, uberRecusadasEu:0,
+    boltGanhos:0, boltHoras:0, boltViagens:0, boltRecusadasCliente:0, boltRecusadasEu:0
+  };
   if (!dia || dia.folga) return vazio;
   const combustivel = dia.custoCombustivel || 0;
   const ganhos = dia.ganhos || 0;
@@ -443,24 +498,39 @@ function totaisDia(dia) {
     combustivel: combustivel,
     uberGanhos: dia.uberGanhos || 0,
     uberHoras: dia.uberHoras || 0,
+    uberViagens: dia.uberViagens || 0,
+    uberRecusadasCliente: dia.uberRecusadasCliente || 0,
+    uberRecusadasEu: dia.uberRecusadasEu || 0,
     boltGanhos: dia.boltGanhos || 0,
-    boltHoras: dia.boltHoras || 0
+    boltHoras: dia.boltHoras || 0,
+    boltViagens: dia.boltViagens || 0,
+    boltRecusadasCliente: dia.boltRecusadasCliente || 0,
+    boltRecusadasEu: dia.boltRecusadasEu || 0
   };
 }
 
 function totaisSemana(segundaISO) {
   const diasSemana = dados.dias.filter(d => segundaDaSemana(d.data) === segundaISO);
   let ganhos=0, liquido=0, km=0, horas=0, litros=0, combustivel=0;
-  let uberGanhos=0, uberHoras=0, boltGanhos=0, boltHoras=0;
+  let uberGanhos=0, uberHoras=0, uberViagens=0, uberRecusadasCliente=0, uberRecusadasEu=0;
+  let boltGanhos=0, boltHoras=0, boltViagens=0, boltRecusadasCliente=0, boltRecusadasEu=0;
   diasSemana.forEach(d => {
     const t = totaisDia(d);
     ganhos += t.ganhos; liquido += t.liquido; km += t.km; horas += t.horas;
     litros += t.litros; combustivel += t.combustivel;
     uberGanhos += t.uberGanhos; uberHoras += t.uberHoras;
+    uberViagens += t.uberViagens;
+    uberRecusadasCliente += t.uberRecusadasCliente;
+    uberRecusadasEu += t.uberRecusadasEu;
     boltGanhos += t.boltGanhos; boltHoras += t.boltHoras;
+    boltViagens += t.boltViagens;
+    boltRecusadasCliente += t.boltRecusadasCliente;
+    boltRecusadasEu += t.boltRecusadasEu;
   });
   return { ganhos, liquido, km, horas, litros, combustivel,
-           uberGanhos, uberHoras, boltGanhos, boltHoras, dias: diasSemana };
+           uberGanhos, uberHoras, uberViagens, uberRecusadasCliente, uberRecusadasEu,
+           boltGanhos, boltHoras, boltViagens, boltRecusadasCliente, boltRecusadasEu,
+           dias: diasSemana };
 }
 
 function renderResumoDia() {
@@ -469,6 +539,7 @@ function renderResumoDia() {
   const d = obterDadosDia();
   const totalGanhos = d.uberGanhos + d.boltGanhos;
   const totalHoras = d.uberHoras + d.boltHoras;
+  const totalViagens = d.uberViagens + d.boltViagens;
 
   if (totalGanhos === 0 && d.kmFim === d.kmInicio && d.custoCombustivel === 0) {
     div.style.display = 'none';
@@ -478,20 +549,18 @@ function renderResumoDia() {
   const km = Math.max(0, d.kmFim - d.kmInicio);
   const liquido = totalGanhos - d.custoCombustivel;
   const ganhoHora = totalHoras > 0 ? (totalGanhos / totalHoras) : 0;
-  const ganhoUberHora = d.uberHoras > 0 ? (d.uberGanhos / d.uberHoras) : 0;
-  const ganhoBoltHora = d.boltHoras > 0 ? (d.boltGanhos / d.boltHoras) : 0;
+  const mediaViagem = totalViagens > 0 ? (totalGanhos / totalViagens) : 0;
 
   cont.innerHTML = `
     <div class="stats">
-      <div class="stat uber"><div class="rot">⚫ Uber</div><div class="val">${d.uberGanhos.toFixed(2)}€ · ${d.uberHoras.toFixed(1)}h</div></div>
-      <div class="stat bolt"><div class="rot">🟢 Bolt</div><div class="val">${d.boltGanhos.toFixed(2)}€ · ${d.boltHoras.toFixed(1)}h</div></div>
+      <div class="stat uber"><div class="rot">⚫ Uber</div><div class="val">${d.uberGanhos.toFixed(2)}€ · ${d.uberViagens}v</div></div>
+      <div class="stat bolt"><div class="rot">🟢 Bolt</div><div class="val">${d.boltGanhos.toFixed(2)}€ · ${d.boltViagens}v</div></div>
       <div class="stat"><div class="rot">Total ganhos</div><div class="val">${totalGanhos.toFixed(2)}€</div></div>
       <div class="stat"><div class="rot">Líquido</div><div class="val">${liquido.toFixed(2)}€</div></div>
       <div class="stat"><div class="rot">Km do dia</div><div class="val">${km.toFixed(1)}</div></div>
       <div class="stat"><div class="rot">Ganho/hora</div><div class="val">${ganhoHora.toFixed(2)}€</div></div>
-    </div>
-    <div class="detalhe" style="color:#9aa0a6;font-size:12px;margin-top:8px;">
-      Uber: ${ganhoUberHora.toFixed(2)}€/h · Bolt: ${ganhoBoltHora.toFixed(2)}€/h
+      <div class="stat"><div class="rot">Média/viagem</div><div class="val">${mediaViagem.toFixed(2)}€</div></div>
+      <div class="stat"><div class="rot">Viagens</div><div class="val">${totalViagens}</div></div>
     </div>
   `;
   div.style.display = 'block';
@@ -522,6 +591,8 @@ function renderProgressoSemanal() {
   document.getElementById('semanaBolt').textContent = t.boltGanhos.toFixed(2) + '€';
   document.getElementById('semanaUberHoras').textContent = t.uberHoras.toFixed(2) + 'h';
   document.getElementById('semanaBoltHoras').textContent = t.boltHoras.toFixed(2) + 'h';
+  document.getElementById('semanaUberViagens').textContent = t.uberViagens;
+  document.getElementById('semanaBoltViagens').textContent = t.boltViagens;
   document.getElementById('totalBruto').textContent = t.ganhos.toFixed(2) + '€';
   document.getElementById('totalLiquido').textContent = t.liquido.toFixed(2) + '€';
   document.getElementById('totalKm').textContent = t.km.toFixed(1);
@@ -546,8 +617,9 @@ function renderHistorico() {
     const t = totaisDia(d);
     return `<div class="hist-item">
       <div class="top"><span>${formatarData(d.data)}</span><span>${t.ganhos.toFixed(2)}€</span></div>
-      <div class="detalhe">⚫ Uber: ${t.uberGanhos.toFixed(2)}€ · ${t.uberHoras.toFixed(1)}h</div>
-      <div class="detalhe">🟢 Bolt: ${t.boltGanhos.toFixed(2)}€ · ${t.boltHoras.toFixed(1)}h</div>
+      <div class="detalhe">⚫ Uber: ${t.uberGanhos.toFixed(2)}€ · ${t.uberHoras.toFixed(1)}h · ${t.uberViagens} viagens</div>
+      <div class="detalhe">🟢 Bolt: ${t.boltGanhos.toFixed(2)}€ · ${t.boltHoras.toFixed(1)}h · ${t.boltViagens} viagens</div>
+      <div class="detalhe">Recusadas: Uber ${t.uberRecusadasCliente + t.uberRecusadasEu} · Bolt ${t.boltRecusadasCliente + t.boltRecusadasEu}</div>
       <div class="detalhe">Líquido: ${t.liquido.toFixed(2)}€ · Km: ${t.km.toFixed(1)} · Horas: ${t.horas.toFixed(2)}h</div>
       <div class="detalhe">Combustível: ${t.combustivel.toFixed(2)}€ (${t.litros.toFixed(2)}L)</div>
       <button class="btn-danger" style="margin-top:6px;padding:4px 10px;font-size:12px;" onclick="removerDia('${d.data}')">Remover</button>
@@ -580,7 +652,7 @@ function nomeBackup() {
 
 function exportarBackup() {
   const backup = {
-    versao: 5,
+    versao: 6,
     exportadoEm: new Date().toISOString(),
     config: config,
     ultimoKm: localStorage.getItem(ULTIMO_KM_KEY) || '',
@@ -657,7 +729,9 @@ window.addEventListener('load', function() {
   carregarDados();
   document.getElementById('dataRegisto').value = hojeISO();
   carregarUltimoKm();
-  ['uberGanhos','uberHoras','boltGanhos','boltHoras','kmInicio','kmFim','litros','custoCombustivel'].forEach(id => {
+  ['uberGanhos','uberHoras','uberViagens','uberRecusadasCliente','uberRecusadasEu',
+   'boltGanhos','boltHoras','boltViagens','boltRecusadasCliente','boltRecusadasEu',
+   'kmInicio','kmFim','litros','custoCombustivel'].forEach(id => {
     document.getElementById(id).addEventListener('input', renderResumoDia);
   });
   renderTudo();
